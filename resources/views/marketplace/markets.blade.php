@@ -1,0 +1,8 @@
+@extends('layouts.marketplace', ['title' => 'Marchés — Marchés maraîchers du Bénin'])
+@section('content')
+<header class="page-intro page-intro-markets"><div class="eyebrow">Ancrage local · Bénin</div><h1>Les marchés</h1><p>Retrouvez les marchés maraîchers référencés et les relevés qui y sont publiés.</p></header>
+<form class="directory-search" method="GET" action="{{ route('markets.index') }}"><x-ui-icon name="search"/><input type="search" name="q" value="{{ request('q') }}" placeholder="Rechercher un marché, une commune..."><button class="button button-primary" type="submit">Rechercher</button></form>
+<div class="section-heading"><h2><x-ui-icon name="store" class="section-icon"/> Marchés référencés</h2><span>{{ $markets->total() }} marché(s)</span></div>
+@if($markets->isEmpty())<div class="empty-state directory-empty"><span class="empty-icon"><x-ui-icon name="map-pin"/></span><h3>Aucun marché trouvé</h3><p>Essayez avec un autre nom ou une autre commune.</p></div>@else
+<div class="directory-grid">@foreach($markets as $market)<article class="directory-card"><div class="directory-card-top"><span class="filter-orb market-orb"><x-ui-icon name="store"/></span><span class="status-pill">{{ $market->published_observations_count }} relevé(s)</span></div><h3>{{ $market->name }}</h3><p class="location">{{ collect([$market->commune, $market->department])->filter()->join(' · ') ?: 'Bénin' }}</p><div class="directory-card-foot"><span><x-ui-icon name="chart-no-axes-column-increasing"/> Prix observés</span><a href="{{ route('prices.index', ['market' => $market->id]) }}">Voir les prix <x-ui-icon name="arrow-right"/></a></div></article>@endforeach</div><div class="pagination-wrap">{{ $markets->links() }}</div>@endif
+@endsection

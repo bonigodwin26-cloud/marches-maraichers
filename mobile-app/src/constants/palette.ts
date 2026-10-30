@@ -1,0 +1,15 @@
+export const colors = {
+  forest: '#064532',
+  forestDark: '#033326',
+  leaf: '#78B82A',
+  lime: '#B7E44D',
+  ink: '#17372B',
+  muted: '#748279',
+  line: '#E2EADD',
+  background: '#F4F7F0',
+  white: '#FFFFFF',
+  pale: '#EAF4E3',
+  amber: '#A8751B',
+  amberBg: '#FFF8E5',
+  red: '#A43D33',
+};

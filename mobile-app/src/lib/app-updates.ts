@@ -3,7 +3,7 @@ import * as Linking from 'expo-linking';
 import { AppState } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 
-import { api, getApiBaseUrl } from '@/lib/api';
+import { api } from '@/lib/api';
 
 export type AppRelease = {
   version_code: number;
@@ -75,9 +75,10 @@ export function useAppUpdate() {
     setDownloadError('');
 
     try {
-      await Linking.openURL(`${getApiBaseUrl()}/app-update/download`);
+      const response = await api<{ url: string }>('/app-update/download-url');
+      await Linking.openURL(response.url);
     } catch {
-      setDownloadError('Le téléchargement ne s’est pas ouvert. Vérifiez que le serveur est accessible sur le même réseau Wi-Fi.');
+      setDownloadError('Le téléchargement ne s’est pas ouvert. Vérifiez que le serveur est accessible sur le même réseau Wi-Fi, ou utilisez la page /application-mobile du site.');
     }
   }, []);
 

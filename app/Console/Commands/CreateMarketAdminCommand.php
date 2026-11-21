@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 
 class CreateMarketAdminCommand extends Command
@@ -39,7 +40,7 @@ class CreateMarketAdminCommand extends Command
         $admin->name = $name;
         $admin->email = $email;
         $admin->password = $password;
-        $admin->email_verified_at = now();
+        $admin->email_verified_at = Carbon::now();
         $admin->is_admin = true;
         $admin->save();
 

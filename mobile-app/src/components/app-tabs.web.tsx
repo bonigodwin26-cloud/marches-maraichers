@@ -6,6 +6,7 @@ import { colors } from '@/constants/palette';
 const tabs = [
   ['index', '/', '⌂', 'Accueil'],
   ['prices', '/prices', '▥', 'Prix'],
+  ['collect', '/collect', '✎', 'Collecter'],
   ['markets', '/markets', '⌖', 'Marchés'],
   ['requests', '/requests', '▤', 'Demandes'],
   ['account', '/account', '◉', 'Compte'],

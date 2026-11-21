@@ -162,7 +162,13 @@ function PriceDetails({ item, onClose }: { item: PriceObservation | null; onClos
       await api('/prices/' + item.id + '/contact', {
         method: 'POST',
         token,
-        body: { phone, organization, requested_volume: volume, message, notification_consent: consent },
+        body: {
+          phone: phone.replace(/[\s().-]/g, ''),
+          organization: organization.trim() || undefined,
+          requested_volume: volume.trim() || undefined,
+          message: message.trim() || undefined,
+          notification_consent: consent,
+        },
       });
       onClose();
       Alert.alert('Demande transmise', 'Votre demande a été envoyée à l’équipe pour validation.');

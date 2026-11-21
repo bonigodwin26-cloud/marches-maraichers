@@ -8,6 +8,6 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(DemoMarketSeeder::class);
+        // Production data must be entered and validated by the market team.
     }
 }

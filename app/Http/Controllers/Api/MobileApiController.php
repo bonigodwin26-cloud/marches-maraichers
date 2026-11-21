@@ -8,15 +8,19 @@ use App\Models\Market;
 use App\Models\PriceObservation;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\EmailVerificationCode;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Auth\Events\Registered;
 
 class MobileApiController extends Controller
 {
@@ -77,7 +81,11 @@ class MobileApiController extends Controller
             ->paginate($filters['per_page'] ?? 20)
             ->withQueryString();
 
-        return response()->json($this->pageData($query, fn (Market $market) => $market->only(['id', 'name', 'commune', 'department', 'published_observations_count'])));
+        return response()->json($this->pageData($query, fn (Market $market) => $market->only([
+            'id', 'name', 'commune', 'department', 'latitude', 'longitude', 'opening_hours', 'contact_phone', 'published_observations_count',
+        ]) + [
+            'image_url' => $market->image_path ? Storage::disk('public')->url($market->image_path) : null,
+        ]));
     }
 
     public function products(Request $request): JsonResponse
@@ -92,35 +100,56 @@ class MobileApiController extends Controller
             ->paginate($filters['per_page'] ?? 30)
             ->withQueryString();
 
-        return response()->json($this->pageData($query, fn (Product $product) => $product->only(['id', 'name', 'category', 'unit', 'published_observations_count'])));
+        return response()->json($this->pageData($query, fn (Product $product) => $product->only(['id', 'name', 'category', 'unit', 'published_observations_count']) + [
+            'image_url' => $product->image_path ? Storage::disk('public')->url($product->image_path) : null,
+        ]));
     }
 
     public function showPrice(PriceObservation $priceObservation): JsonResponse
     {
-        abort_unless($priceObservation->status === 'published', 404);
+        $priceObservation->loadMissing(['product', 'market']);
+        abort_unless(
+            $priceObservation->status === 'published'
+                && $priceObservation->product?->is_active
+                && $priceObservation->market?->is_active,
+            404,
+        );
 
-        return response()->json(['data' => $this->observationData($priceObservation->load(['product', 'market']))]);
+        return response()->json(['data' => $this->observationData($priceObservation)]);
     }
 
     public function register(Request $request): JsonResponse
     {
+        $request->merge(['email' => Str::lower((string) $request->input('email'))]);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)],
+            'privacy_accepted' => ['required', 'accepted'],
+        ], [
+            'privacy_accepted.accepted' => 'Vous devez accepter la politique de confidentialité pour créer un compte.',
+            'privacy_accepted.required' => 'Vous devez accepter la politique de confidentialité pour créer un compte.',
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => Str::lower($validated['email']),
             'password' => $validated['password'],
+            'privacy_accepted_at' => now(),
+            'privacy_policy_version' => config('privacy.version'),
         ]);
 
         event(new Registered($user));
 
+        $verificationToken = $user->createToken('mobile-email-verification', ['verify-email'], now()->addMinutes(30))->plainTextToken;
+
         return response()->json([
-            'message' => 'Compte créé. Consultez votre e-mail pour confirmer votre adresse avant de vous connecter.',
+            'message' => 'Compte créé. Saisissez le code reçu par e-mail pour confirmer votre adresse.',
             'requires_email_verification' => true,
+            'data' => [
+                'verification_token' => $verificationToken,
+                'email' => $user->email,
+            ],
         ], 201);
     }
 
@@ -149,14 +178,20 @@ class MobileApiController extends Controller
         }
 
         if (! $user->hasVerifiedEmail()) {
+            $verificationToken = $user->createToken('mobile-email-verification', ['verify-email'], now()->addMinutes(30))->plainTextToken;
+
             return response()->json([
-                'message' => 'Confirmez votre adresse e-mail depuis le lien reçu avant de vous connecter.',
+                'message' => 'Confirmez votre adresse e-mail avec le code reçu avant de vous connecter.',
                 'code' => 'email_not_verified',
+                'data' => [
+                    'verification_token' => $verificationToken,
+                    'email' => $user->email,
+                ],
             ], 403);
         }
 
         RateLimiter::clear('mobile-login:'.$rateKey);
-        $token = $user->createToken('mobile-app', ['mobile'])->plainTextToken;
+        $token = $user->createToken('mobile-app', ['mobile'], now()->addDays(30))->plainTextToken;
 
         return response()->json([
             'data' => [
@@ -164,6 +199,54 @@ class MobileApiController extends Controller
                 'user' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],
             ],
         ]);
+    }
+
+    public function verifyEmailCode(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'size:6', 'regex:/^\d{6}$/'],
+        ]);
+
+        $user = $request->user();
+        $codes = app(EmailVerificationCode::class);
+
+        if (! $codes->verify($user, $data['code'])) {
+            return response()->json([
+                'message' => 'Code incorrect, expiré ou nombre de tentatives dépassé. Demandez un nouveau code.',
+                'code' => 'invalid_verification_code',
+            ], 422);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+            event(new Verified($user));
+        }
+
+        $codes->clear($user);
+        $user->currentAccessToken()->delete();
+
+        $token = $user->createToken('mobile-app', ['mobile'], now()->addDays(30))->plainTextToken;
+
+        return response()->json([
+            'message' => 'Adresse e-mail confirmée.',
+            'data' => [
+                'token' => $token,
+                'user' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],
+            ],
+        ]);
+    }
+
+    public function resendEmailCode(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Cette adresse e-mail est déjà confirmée.']);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return response()->json(['message' => 'Un nouveau code de vérification a été envoyé par e-mail.']);
     }
 
     public function me(Request $request): JsonResponse
@@ -176,9 +259,37 @@ class MobileApiController extends Controller
             ],
         ]);
     }
+
+    public function storeObservation(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'product_id' => ['required', 'integer', Rule::exists('products', 'id')->where('is_active', true)],
+            'market_id' => ['required', 'integer', Rule::exists('markets', 'id')->where('is_active', true)],
+            'price_xof' => ['required', 'integer', 'min:1', 'max:100000000'],
+            'available_quantity' => ['nullable', 'numeric', 'min:0'],
+            'quality' => ['nullable', 'string', 'max:80'],
+            'observed_at' => ['required', 'date', 'before_or_equal:now'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        /** @var Product $product */
+        $product = Product::findOrFail($data['product_id']);
+        $observation = PriceObservation::create([
+            ...$data,
+            'unit_snapshot' => $product->unit,
+            'collected_by' => $request->user()->id,
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'message' => 'Observation enregistrée et envoyée pour validation.',
+            'data' => $observation->load(['product:id,name,unit', 'market:id,name']),
+        ], 201);
+    }
+
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()?->delete();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Vous êtes déconnecté.']);
     }
@@ -195,7 +306,13 @@ class MobileApiController extends Controller
 
     public function storeContact(Request $request, PriceObservation $priceObservation): JsonResponse
     {
-        abort_unless($priceObservation->status === 'published', 404);
+        $priceObservation->loadMissing(['product', 'market']);
+        abort_unless(
+            $priceObservation->status === 'published'
+                && $priceObservation->product?->is_active
+                && $priceObservation->market?->is_active,
+            404,
+        );
 
         if (ContactRequest::where('buyer_id', $request->user()->id)
             ->where('status', 'approved')
@@ -245,6 +362,7 @@ class MobileApiController extends Controller
         return response()->json(['message' => 'Votre déclaration a été enregistrée.']);
     }
 
+    /** @return array<string, mixed> */
     private function observationData(PriceObservation $item): array
     {
         return [
@@ -252,12 +370,13 @@ class MobileApiController extends Controller
             'price_xof' => (int) $item->price_xof,
             'unit_snapshot' => $item->unit_snapshot,
             'quality' => $item->quality,
-            'observed_at' => $item->observed_at?->toIso8601String(),
+            'observed_at' => $item->observed_at->toIso8601String(),
             'product' => $item->product?->only(['id', 'name', 'category', 'unit']),
             'market' => $item->market?->only(['id', 'name', 'commune', 'department']),
         ];
     }
 
+    /** @return array<string, mixed> */
     private function contactRequestData(ContactRequest $item): array
     {
         return [
@@ -276,6 +395,10 @@ class MobileApiController extends Controller
         ];
     }
 
+    /**
+     * @param  LengthAwarePaginator<int, mixed>  $paginator
+     * @return array<string, mixed>
+     */
     private function pageData(LengthAwarePaginator $paginator, callable $map): array
     {
         return [

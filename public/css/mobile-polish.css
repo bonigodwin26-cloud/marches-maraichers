@@ -853,3 +853,64 @@
     translate: 0 0;
   }
 }
+
+@media (max-width: 760px) {
+  body.market-app[data-page="admin"] .admin-console { display: block; overflow-x: clip; }
+  body.market-app[data-page="admin"] .admin-sidebar {
+    position: fixed; top: 0; right: auto; bottom: 0; left: 0; z-index: 49;
+    display: flex; width: min(86vw, 320px); height: 100svh; min-height: 0;
+    padding: 22px 14px 18px; overflow-y: auto; border-radius: 0 24px 24px 0;
+    box-shadow: 18px 0 45px #04251c52; transform: translateX(-105%);
+    transition: transform .28s cubic-bezier(.22,.8,.25,1);
+  }
+  body.market-app[data-page="admin"] .admin-sidebar.is-open { transform: translateX(0); }
+  body.market-app[data-page="admin"] .admin-side-nav { display: grid; grid-template-columns: 1fr; gap: 5px; overflow: visible; }
+  body.market-app[data-page="admin"] .admin-side-link {
+    min-height: 45px; flex-direction: row; justify-content: flex-start; gap: 11px;
+    padding: 0 13px; font-size: 13px; text-align: left;
+  }
+  body.market-app[data-page="admin"] .admin-menu-toggle {
+    position: relative; display: grid; width: 42px; height: 42px; place-items: center;
+    margin: -4px 0 0; border: 0; border-radius: 13px; background: #edf5e9;
+    box-shadow: 0 5px 15px #174d3714;
+  }
+  body.market-app[data-page="admin"] .admin-menu-toggle span {
+    position: absolute; width: 17px; height: 2px; border-radius: 3px;
+    background: #174d37; transition: transform .2s ease, opacity .2s ease;
+  }
+  body.market-app[data-page="admin"] .admin-menu-toggle span:first-child { transform: translateY(-5px); }
+  body.market-app[data-page="admin"] .admin-menu-toggle span:last-child { transform: translateY(5px); }
+  body.market-app[data-page="admin"] .admin-menu-close {
+    display: grid; position: absolute; top: 18px; right: 14px; width: 38px; height: 38px;
+    place-items: center; border: 1px solid #ffffff2b; border-radius: 12px;
+    background: #ffffff14; cursor: pointer;
+  }
+  body.market-app[data-page="admin"] .admin-menu-close span {
+    position: absolute; width: 17px; height: 2px; border-radius: 3px; background: #fff;
+  }
+  body.market-app[data-page="admin"] .admin-menu-close span:first-child { transform: rotate(45deg); }
+  body.market-app[data-page="admin"] .admin-menu-close span:last-child { transform: rotate(-45deg); }
+  body.market-app[data-page="admin"] .admin-titlebar { display: flex; flex-direction: row; align-items: flex-start; }
+  body.market-app[data-page="admin"] .admin-panel-actions { width: auto; flex: 0 0 auto; }
+}
+
+/* Consentement à la politique de confidentialité lors de l'inscription */
+.auth-privacy-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--muted); }
+.auth-privacy-row .auth-check { color: var(--ink); font-weight: 600; }
+.auth-inline-link { padding: 0; border: 0; background: none; color: var(--forest); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
+.privacy-backdrop { position: fixed; z-index: 200; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(4, 32, 23, .62); backdrop-filter: blur(4px); }
+.privacy-modal { width: min(100%, 480px); max-height: min(86vh, 700px); overflow: auto; padding: 26px; border: 1px solid #dfe9e1; border-radius: 20px; background: #fff; box-shadow: 0 30px 90px rgba(4, 32, 23, .3); }
+.privacy-kicker { color: #78b82a; font-size: 10px; font-weight: 900; letter-spacing: .14em; }
+.privacy-modal h2 { margin: 8px 0 10px; color: var(--ink); font-size: 23px; line-height: 1.2; }
+.privacy-modal p, .privacy-modal li { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.privacy-modal p { margin: 0 0 12px; }
+.privacy-modal ul { margin: 0 0 14px; padding-left: 18px; }
+.privacy-modal li { margin-bottom: 6px; }
+.privacy-full-link { display: inline-flex; align-items: center; gap: 6px; color: var(--forest); font-size: 12px; font-weight: 800; text-decoration: none; }
+.privacy-full-link .ui-icon { width: 15px; height: 15px; }
+.privacy-actions { display: grid; gap: 9px; margin-top: 20px; }
+.privacy-actions .button { width: 100%; min-height: 46px; }
+body.market-app[data-theme="dark"] .privacy-modal { background: #192720; border-color: #304139; color: #edf5ef; }
+body.market-app[data-theme="dark"] .privacy-modal h2 { color: #edf5ef; }
+body.market-app[data-theme="dark"] .auth-inline-link { color: #c5ed91; }
+@media (max-width: 520px) { .privacy-modal { padding: 21px 19px; } .privacy-modal h2 { font-size: 20px; } }

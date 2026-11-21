@@ -1,14 +1,16 @@
-const API_BASE = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api/mobile/v1').replace(/\/+$/, '');
+const configuredBase = process.env.EXPO_PUBLIC_API_URL;
 
 export class ApiError extends Error {
   status: number;
   code?: string;
+  data?: unknown;
 
-  constructor(message: string, status: number, code?: string) {
+  constructor(message: string, status: number, code?: string, data?: unknown) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.code = code;
+    this.data = data;
   }
 }
 
@@ -18,14 +20,23 @@ interface ApiOptions {
   body?: unknown;
 }
 
+export function getApiBaseUrl(): string {
+  return (configuredBase || '').replace(/\/+$/, '');
+}
+
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
+  const base = getApiBaseUrl();
+  if (!base) {
+    throw new ApiError('Adresse de l’API non configurée. Renseignez EXPO_PUBLIC_API_URL puis relancez l’application.', 0, 'api_not_configured');
+  }
+
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
   if (options.token) headers.Authorization = 'Bearer ' + options.token;
 
   let response: Response;
   try {
-    response = await fetch(API_BASE + path, {
+    response = await fetch(base + path, {
       method: options.method || 'GET',
       headers,
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
@@ -41,6 +52,7 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
       String(validationMessage || payload.message || 'Une erreur est survenue. Réessayez.'),
       response.status,
       payload.code,
+      payload.data,
     );
   }
 
@@ -53,8 +65,4 @@ export function buildQuery(params: Record<string, string | number | null | undef
     .map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(String(value)))
     .join('&');
   return query ? '?' + query : '';
-}
-
-export function getApiBaseUrl(): string {
-  return API_BASE;
 }

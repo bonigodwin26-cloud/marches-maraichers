@@ -83,7 +83,7 @@ new class extends Component {
     /**
      * Confirm two-factor authentication for the user.
      */
-    public function confirmTwoFactor(ConfirmTwoFactorAuthentication $confirmTwoFactorAuthentication): void
+    public function confirmTwoFactor(ConfirmTwoFactorAuthentication $confirmTwoFactorAuthentication)
     {
         $this->validate();
 
@@ -94,6 +94,13 @@ new class extends Component {
         $this->closeModal();
 
         $this->dispatch('two-factor-enabled');
+
+        // Un administrateur est redirigé ici depuis /admin tant que la 2FA
+        // n'est pas confirmée : le renvoyer vers son tableau de bord évite
+        // de le laisser sur l'écran des paramètres sans indication.
+        if (auth()->user()?->is_admin) {
+            return $this->redirectRoute('admin.index');
+        }
     }
 
     /**

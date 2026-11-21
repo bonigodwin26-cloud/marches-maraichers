@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -66,7 +67,7 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::requestPasswordResetLinkView(fn (Request $request) => $this->authPage($request, 'auth-forgot', 'Mot de passe oublié'));
     }
 
-    private function authPage(Request $request, string $page, string $title)
+    private function authPage(Request $request, string $page, string $title): View
     {
         return view('marketplace.react', [
             'page' => $page,

@@ -4,6 +4,7 @@ export interface Product {
   category?: string | null;
   unit?: string | null;
   published_observations_count?: number;
+  image_url?: string | null;
 }
 
 export interface Market {
@@ -11,7 +12,12 @@ export interface Market {
   name: string;
   commune?: string | null;
   department?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  opening_hours?: string | null;
+  contact_phone?: string | null;
   published_observations_count?: number;
+  image_url?: string | null;
 }
 
 export interface PriceObservation {

@@ -3,26 +3,34 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\MarketplaceController;
+use App\Models\AuditLog;
 use App\Models\ContactRequest;
 use App\Models\Market;
 use App\Models\NotificationDelivery;
 use App\Models\PriceObservation;
-use App\Models\PriceAlertSubscription;
 use App\Models\Producer;
 use App\Models\Product;
+use App\Services\AuditLogger;
+use App\Services\MarketMessenger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Services\MarketMessenger;
 
 class MarketAdminController extends Controller
 {
+    public function __construct(private readonly AuditLogger $auditLogger) {}
+
     public function index(): View
     {
         $products = Product::orderBy('name')->get();
         $markets = Market::orderBy('name')->get();
-        $producers = Producer::with('market')->where('is_active', true)->orderBy('name')->get();
+        $producers = Producer::with('market')->orderBy('name')->get();
         $pendingRequests = ContactRequest::with(['buyer', 'product', 'market'])->where('status', 'pending')->latest()->get();
         $requests = ContactRequest::with(['buyer', 'product', 'market'])->latest()->take(100)->get();
         $recentPrices = PriceObservation::with(['product', 'market', 'collector'])->latest('observed_at')->take(12)->get();
@@ -32,7 +40,7 @@ class MarketAdminController extends Controller
             ->where('status', 'pending')->latest('observed_at')->take(100)->get();
         $recentNotifications = NotificationDelivery::with(['contactRequest.product', 'priceAlertSubscription.product', 'priceAlertSubscription.market'])->latest()->take(12)->get();
 
-        return app(\App\Http\Controllers\MarketplaceController::class)->renderReactPage('admin', 'Gestion des marchés', [
+        return app(MarketplaceController::class)->renderReactPage('admin', 'Gestion des marchés', [
             'requests' => $requests->map(fn (ContactRequest $item) => [
                 'id' => $item->id, 'product' => $item->product?->name, 'market' => $item->market?->name,
                 'created_at' => $item->created_at?->format('d/m/Y'),
@@ -50,32 +58,38 @@ class MarketAdminController extends Controller
             'products' => $products->map(fn (Product $item) => [
                 'id' => $item->id, 'name' => $item->name, 'category' => $item->category,
                 'unit' => $item->unit, 'is_active' => $item->is_active,
+                'image_url' => $item->image_path ? Storage::disk('public')->url($item->image_path) : null,
             ])->values(),
             'markets' => $markets->map(fn (Market $item) => [
                 'id' => $item->id, 'name' => $item->name, 'commune' => $item->commune,
-                'department' => $item->department, 'is_active' => $item->is_active,
+                'department' => $item->department, 'latitude' => $item->latitude, 'longitude' => $item->longitude,
+                'opening_hours' => $item->opening_hours, 'contact_phone' => $item->contact_phone,
+                'image_url' => $item->image_path ? Storage::disk('public')->url($item->image_path) : null,
+                'is_active' => $item->is_active,
             ])->values(),
             'producers' => $producers->map(fn (Producer $item) => [
                 'id' => $item->id, 'name' => $item->name, 'phone' => $item->phone,
-                'market' => $item->market?->name, 'commune' => $item->commune,
+                'organization' => $item->organization, 'market' => $item->market?->name, 'market_id' => $item->market_id,
+                'commune' => $item->commune, 'notification_consent' => $item->notification_consent,
+                'is_active' => $item->is_active,
             ])->values(),
             'recentPrices' => $recentPrices->map(fn (PriceObservation $item) => [
                 'product' => $item->product?->name, 'market' => $item->market?->name, 'price_xof' => $item->price_xof,
-                'unit_snapshot' => $item->unit_snapshot, 'observed_at' => $item->observed_at?->format('d/m/Y H:i'),
+                'unit_snapshot' => $item->unit_snapshot, 'observed_at' => $item->observed_at->format('d/m/Y H:i'),
                 'collector' => $item->collector?->name,
             ])->values(),
             'todayPrices' => $todayPrices->map(fn (PriceObservation $item) => [
                 'product' => $item->product?->name, 'market' => $item->market?->name,
                 'price_xof' => $item->price_xof, 'unit_snapshot' => $item->unit_snapshot,
                 'available_quantity' => $item->available_quantity,
-                'quality' => $item->quality, 'observed_at' => $item->observed_at?->format('d/m/Y H:i'),
+                'quality' => $item->quality, 'observed_at' => $item->observed_at->format('d/m/Y H:i'),
                 'collector' => $item->collector?->name,
             ])->values(),
             'pendingPrices' => $pendingPrices->map(fn (PriceObservation $item) => [
                 'id' => $item->id, 'product' => $item->product?->name, 'market' => $item->market?->name,
                 'producer' => $item->producer?->name, 'price_xof' => $item->price_xof,
                 'unit_snapshot' => $item->unit_snapshot, 'available_quantity' => $item->available_quantity,
-                'quality' => $item->quality, 'observed_at' => $item->observed_at?->format('d/m/Y H:i'),
+                'quality' => $item->quality, 'observed_at' => $item->observed_at->format('d/m/Y H:i'),
                 'collector' => $item->collector?->name,
             ])->values(),
             'requestCount' => ContactRequest::where('status', 'pending')->count(),
@@ -93,9 +107,13 @@ class MarketAdminController extends Controller
             'notificationReady' => $this->notificationReady(),
             'recentNotifications' => $recentNotifications->map(fn (NotificationDelivery $item) => [
                 'id' => $item->id, 'event' => str_replace('_', ' ', $item->event), 'recipient_name' => $item->recipient_name,
-                'subject' => $item->contactRequest?->product?->name ?? $item->priceAlertSubscription?->product?->name,
+                'subject' => $item->contactRequest?->product?->name ?: $item->priceAlertSubscription?->product?->name,
                 'recipient_phone' => $item->recipient_phone, 'channel' => $item->channel, 'status' => $item->status,
                 'has_error' => (bool) $item->error, 'can_retry' => in_array($item->status, ['pending', 'failed', 'not_configured', 'logged'], true),
+            ])->values(),
+            'auditLogs' => AuditLog::with('user')->latest()->take(30)->get()->map(fn (AuditLog $item) => [
+                'id' => $item->id, 'action' => $item->action, 'target' => class_basename($item->auditable_type).' #'.$item->auditable_id,
+                'user' => $item->user->name ?? 'Système', 'created_at' => $item->created_at?->format('d/m/Y H:i'),
             ])->values(),
             'statusMessage' => session('admin-status'),
             'hasErrors' => session('errors')?->any() ?? false,
@@ -109,11 +127,37 @@ class MarketAdminController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'category' => ['nullable', 'string', 'max:80'],
             'unit' => ['required', 'string', 'max:100'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
-        $data['slug'] = \Illuminate\Support\Str::slug($data['name']).'-'.\Illuminate\Support\Str::random(5);
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('products', 'public');
+        }
+        unset($data['image']);
+        $data['slug'] = Str::slug($data['name']).'-'.Str::random(5);
         Product::create($data);
 
         return back()->with('admin-status', 'Produit ajouté au catalogue.');
+    }
+
+    public function updateProduct(Request $request, Product $product): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'category' => ['nullable', 'string', 'max:80'],
+            'unit' => ['required', 'string', 'max:100'],
+        ]);
+        $product->update($data);
+        $this->auditLogger->record($request, 'product.updated', $product);
+
+        return back()->with('admin-status', 'Produit mis à jour.');
+    }
+
+    public function toggleProduct(Request $request, Product $product): RedirectResponse
+    {
+        $product->update(['is_active' => ! $product->is_active]);
+        $this->auditLogger->record($request, 'product.status_changed', $product, ['is_active' => $product->is_active]);
+
+        return back()->with('admin-status', $product->is_active ? 'Produit réactivé.' : 'Produit désactivé.');
     }
 
     public function storeMarket(Request $request): RedirectResponse
@@ -122,10 +166,44 @@ class MarketAdminController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'commune' => ['nullable', 'string', 'max:100'],
             'department' => ['nullable', 'string', 'max:100'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'opening_hours' => ['nullable', 'string', 'max:160'],
+            'contact_phone' => ['nullable', 'string', 'regex:/^\+[1-9][0-9]{7,14}$/'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('markets', 'public');
+        }
+        unset($data['image']);
         Market::create($data);
 
         return back()->with('admin-status', 'Marché ajouté.');
+    }
+
+    public function updateMarket(Request $request, Market $market): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'commune' => ['nullable', 'string', 'max:100'],
+            'department' => ['nullable', 'string', 'max:100'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'opening_hours' => ['nullable', 'string', 'max:160'],
+            'contact_phone' => ['nullable', 'string', 'regex:/^\+[1-9][0-9]{7,14}$/'],
+        ]);
+        $market->update($data);
+        $this->auditLogger->record($request, 'market.updated', $market);
+
+        return back()->with('admin-status', 'Marché mis à jour.');
+    }
+
+    public function toggleMarket(Request $request, Market $market): RedirectResponse
+    {
+        $market->update(['is_active' => ! $market->is_active]);
+        $this->auditLogger->record($request, 'market.status_changed', $market, ['is_active' => $market->is_active]);
+
+        return back()->with('admin-status', $market->is_active ? 'Marché réactivé.' : 'Marché désactivé.');
     }
 
     public function storeProducer(Request $request): RedirectResponse
@@ -139,24 +217,55 @@ class MarketAdminController extends Controller
             'notification_consent' => ['nullable', 'boolean'],
         ]);
         $data['notification_consent'] = $request->boolean('notification_consent');
-        Producer::create($data);
+        $producer = Producer::create($data);
+        $this->auditLogger->record($request, 'producer.created', $producer);
 
         return back()->with('admin-status', 'Producteur ajouté au répertoire.');
+    }
+
+    public function updateProducer(Request $request, Producer $producer): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:140'],
+            'organization' => ['nullable', 'string', 'max:160'],
+            'phone' => ['required', 'string', 'regex:/^\+[1-9][0-9]{7,14}$/'],
+            'market_id' => ['nullable', 'exists:markets,id'],
+            'commune' => ['nullable', 'string', 'max:100'],
+            'notification_consent' => ['nullable', 'boolean'],
+        ]);
+        $data['notification_consent'] = $request->boolean('notification_consent');
+        $producer->update($data);
+        $this->auditLogger->record($request, 'producer.updated', $producer);
+
+        return back()->with('admin-status', 'Producteur mis à jour.');
+    }
+
+    public function toggleProducer(Request $request, Producer $producer): RedirectResponse
+    {
+        $producer->update(['is_active' => ! $producer->is_active]);
+        $this->auditLogger->record($request, 'producer.status_changed', $producer, ['is_active' => $producer->is_active]);
+
+        return back()->with('admin-status', $producer->is_active ? 'Producteur réactivé.' : 'Producteur désactivé.');
     }
 
     public function storePrice(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
-            'market_id' => ['required', 'exists:markets,id'],
-            'producer_id' => ['nullable', 'exists:producers,id'],
+            'product_id' => ['required', Rule::exists('products', 'id')->where('is_active', true)],
+            'market_id' => ['required', Rule::exists('markets', 'id')->where('is_active', true)],
+            'producer_id' => [
+                'nullable',
+                Rule::exists('producers', 'id')->where(
+                    fn ($query) => $query->where('market_id', $request->input('market_id')),
+                ),
+            ],
             'price_xof' => ['required', 'integer', 'min:1', 'max:100000000'],
             'quality' => ['nullable', 'string', 'max:120'],
             'available_quantity' => ['nullable', 'numeric', 'gt:0', 'max:100000000'],
             'observed_at' => ['required', 'date', 'before_or_equal:now'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
-        $product = Product::findOrFail($data['product_id']);
+        $product = Product::query()->whereKey($data['product_id'])->firstOrFail();
         PriceObservation::create($data + [
             'collected_by' => $request->user()->id,
             'unit_snapshot' => $product->unit,
@@ -194,6 +303,9 @@ class MarketAdminController extends Controller
 
         return response()->streamDownload(function () use ($type) {
             $output = fopen('php://output', 'w');
+            if ($output === false) {
+                throw new RuntimeException('Unable to open the export stream.');
+            }
             fwrite($output, "\xEF\xBB\xBF");
 
             if ($type === 'demandes') {
@@ -216,7 +328,7 @@ class MarketAdminController extends Controller
                         fputcsv($output, [
                             $item->id, $item->product?->name, $item->market?->name, $item->producer?->name,
                             $item->price_xof, $item->unit_snapshot, $item->available_quantity, $item->quality,
-                            $item->observed_at?->format('Y-m-d H:i'), $item->status, $item->collector?->name,
+                            $item->observed_at->format('Y-m-d H:i'), $item->status, $item->collector->name,
                         ], ';', '"', '\\');
                     }
                 });
@@ -242,6 +354,7 @@ class MarketAdminController extends Controller
             && ($channel !== 'twilio_whatsapp' || filled(config('services.market_messenger.whatsapp_content_sid')));
     }
 
+    /** @return array<int, array<string, mixed>> */
     private function marketTrends(): array
     {
         $now = now();
@@ -257,7 +370,7 @@ class MarketAdminController extends Controller
         foreach ($observations as $item) {
             $key = $item->product_id.':'.$item->market_id;
             $rows[$key] ??= ['product' => $item->product?->name, 'market' => $item->market?->name, 'unit' => $item->unit_snapshot, 'offer' => 0.0, 'demand' => 0.0, 'requests' => 0, 'currentPrices' => [], 'previousPrices' => []];
-            if ($item->observed_at?->greaterThanOrEqualTo($currentFrom)) {
+            if ($item->observed_at->greaterThanOrEqualTo($currentFrom)) {
                 $rows[$key]['currentPrices'][] = (int) $item->price_xof;
                 $rows[$key]['offer'] = (float) ($item->available_quantity ?? 0);
             } else {
@@ -291,11 +404,23 @@ class MarketAdminController extends Controller
         abort_unless($contactRequest->status === 'pending', 409);
         $data = $request->validate([
             'decision' => ['required', 'in:approved,rejected'],
-            'producer_id' => ['nullable', 'exists:producers,id'],
+            'producer_id' => [
+                'nullable',
+                Rule::exists('producers', 'id')->where(
+                    fn ($query) => $query->where('market_id', $contactRequest->market_id),
+                ),
+            ],
             'admin_note' => ['nullable', 'string', 'max:1000'],
         ]);
         if ($data['decision'] === 'approved') {
-            $request->validate(['producer_id' => ['required', 'exists:producers,id']]);
+            $request->validate([
+                'producer_id' => [
+                    'required',
+                    Rule::exists('producers', 'id')->where(
+                        fn ($query) => $query->where('market_id', $contactRequest->market_id),
+                    ),
+                ],
+            ]);
         }
 
         $contactRequest->update([

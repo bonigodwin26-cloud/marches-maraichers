@@ -1,6 +1,6 @@
 module.exports = ({ config }) => {
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || '';
-  const allowCleartextTraffic = apiUrl.startsWith('http://');
+  const allowCleartextTraffic = process.env.EXPO_ALLOW_CLEARTEXT_HTTP === 'true' && apiUrl.startsWith('http://');
 
   return {
     ...config,

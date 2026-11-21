@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { AppHeader, AppIcon, EmptyBlock, ErrorBlock, Eyebrow, LoadingBlock, PageFrame, PageTitle } from '@/components/common';
-import { ProductImage } from '@/components/price-card';
+import { PhotoContent, ProductImage } from '@/components/price-card';
 import { colors } from '@/constants/palette';
 import { api, ApiError, buildQuery } from '@/lib/api';
 import type { Market, PageResult, Product } from '@/lib/types';
@@ -60,7 +60,7 @@ export function DirectoryScreen({ kind }: { kind: DirectoryKind }) {
 function MarketCard({ item }: { item: Market }) {
   return (
     <View style={styles.card}>
-      <View style={styles.cardIcon}><AppIcon name="markets" size={22} color={colors.forest} /></View>
+      <View style={styles.cardIcon}><PhotoContent url={item.image_url} fallback={<AppIcon name="markets" size={22} color={colors.forest} />} style={styles.cardPhoto} /></View>
       <View style={styles.cardCopy}>
         <Text style={styles.cardTitle}>{item.name}</Text>
         <Text style={styles.cardSubtitle}>{[item.commune, item.department].filter(Boolean).join(' · ') || 'Localisation à préciser'}</Text>
@@ -73,7 +73,7 @@ function MarketCard({ item }: { item: Market }) {
 function ProductCard({ item }: { item: Product }) {
   return (
     <View style={styles.card}>
-      <ProductImage name={item.name} />
+      <ProductImage name={item.name} url={item.image_url} />
       <View style={styles.cardCopy}>
         <Text style={styles.cardTitle}>{item.name}</Text>
         <Text style={styles.cardSubtitle}>{item.category || 'Produit maraîcher'}</Text>
@@ -94,7 +94,8 @@ const styles = StyleSheet.create({
   resultTitle: { color: colors.ink, fontSize: 18, fontWeight: '900' },
   resultCount: { color: colors.muted, fontSize: 11 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 86, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 12 },
-  cardIcon: { width: 54, height: 54, borderRadius: 16, backgroundColor: colors.pale, alignItems: 'center', justifyContent: 'center' },
+  cardIcon: { width: 54, height: 54, borderRadius: 16, backgroundColor: colors.pale, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  cardPhoto: { width: '100%', height: '100%' },
   cardCopy: { flex: 1, gap: 4, minWidth: 0 },
   cardTitle: { color: colors.ink, fontSize: 15, fontWeight: '900' },
   cardSubtitle: { color: colors.muted, fontSize: 12 },

@@ -17,6 +17,10 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Icon sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }} md="bar_chart" />
         <NativeTabs.Trigger.Label>Prix</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="collect">
+        <NativeTabs.Trigger.Icon sf={{ default: 'pencil.and.list.clipboard', selected: 'pencil.and.list.clipboard' }} md="edit_note" />
+        <NativeTabs.Trigger.Label>Collecter</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="markets">
         <NativeTabs.Trigger.Icon sf={{ default: 'storefront', selected: 'storefront.fill' }} md="storefront" />
         <NativeTabs.Trigger.Label>Marchés</NativeTabs.Trigger.Label>

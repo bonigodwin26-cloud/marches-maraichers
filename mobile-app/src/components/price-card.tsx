@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image, ImageSourcePropType, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, ImageSourcePropType, ImageStyle, Pressable, StyleProp, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/constants/palette';
 import { AppIcon } from '@/components/common';
@@ -14,12 +14,27 @@ const productImages: Record<string, ImageSourcePropType> = {
   feuille: require('@/assets/images/legume-feuille.jpg'),
 };
 
-export function ProductImage({ name, size = 58 }: { name?: string | null; size?: number }) {
+/**
+ * Affiche la photo renvoyée par l'API ; en cas d'absence ou d'erreur de
+ * chargement, le composant fourni par l'appelant sert de repli local.
+ * Les dimensions sont imposées par le cadre parent (obligatoire pour une image réseau).
+ */
+export function PhotoContent({ url, fallback, style }: { url?: string | null; fallback: React.ReactNode; style?: StyleProp<ImageStyle> }) {
+  const [failed, setFailed] = useState(false);
+  if (!url || failed) return <>{fallback}</>;
+  return <Image source={{ uri: url }} resizeMode="cover" onError={() => setFailed(true)} style={[styles.image, style]} />;
+}
+
+export function ProductImage({ name, url, size = 58 }: { name?: string | null; url?: string | null; size?: number }) {
   const normalized = (name || '').toLocaleLowerCase('fr');
   const key = Object.keys(productImages).find((candidate) => normalized.includes(candidate));
+  const fallback = key
+    ? <Image source={productImages[key]} style={styles.image} />
+    : <AppIcon name="leaf" size={size * 0.4} color={colors.leaf} />;
+
   return (
     <View style={[styles.imageFrame, { width: size, height: size }]}>
-      {key ? <Image source={productImages[key]} style={styles.image} /> : <AppIcon name="leaf" size={size * 0.4} color={colors.leaf} />}
+      <PhotoContent url={url} fallback={fallback} />
     </View>
   );
 }
@@ -27,7 +42,7 @@ export function ProductImage({ name, size = 58 }: { name?: string | null; size?:
 export function PriceCard({ item, onPress }: { item: PriceObservation; onPress?: () => void }) {
   const content = (
     <View style={styles.card}>
-      <ProductImage name={item.product?.name} />
+      <ProductImage name={item.product?.name} url={item.product?.image_url} />
       <View style={styles.details}>
         <Text style={styles.productName} numberOfLines={1}>{item.product?.name || 'Produit maraîcher'}</Text>
         <View style={styles.marketLine}><AppIcon name="location" size={13} color={colors.muted} /><Text style={styles.marketName} numberOfLines={1}>{item.market?.name || 'Marché'}</Text></View>

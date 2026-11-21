@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\ContactRequest;
 use App\Models\Market;
-use App\Models\PriceObservation;
 use App\Models\PriceAlertSubscription;
+use App\Models\PriceObservation;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MarketplaceController extends Controller
@@ -16,6 +18,7 @@ class MarketplaceController extends Controller
     public function index(Request $request): View
     {
         $observations = PriceObservation::query()->with(['product', 'market'])->where('status', 'published')->latest('observed_at')->take(3)->get();
+
         return $this->renderReactPage('home', 'Accueil', [
             'observations' => $observations->map(fn (PriceObservation $observation) => $this->observationData($observation))->values(),
             'publishedCount' => PriceObservation::where('status', 'published')->count(),
@@ -57,6 +60,7 @@ class MarketplaceController extends Controller
         ]);
     }
 
+    /** @return array<int, array<string, mixed>> */
     private function publicMarketTrends(Request $request): array
     {
         $now = now();
@@ -79,7 +83,7 @@ class MarketplaceController extends Controller
         foreach ($observations as $item) {
             $key = $item->product_id.':'.$item->market_id;
             $rows[$key] ??= ['product' => $item->product?->name, 'market' => $item->market?->name, 'unit' => $item->unit_snapshot, 'offer' => 0.0, 'demand' => 0.0, 'requests' => 0, 'currentPrices' => [], 'previousPrices' => []];
-            if ($item->observed_at?->greaterThanOrEqualTo($currentFrom)) {
+            if ($item->observed_at->greaterThanOrEqualTo($currentFrom)) {
                 $rows[$key]['currentPrices'][] = (int) $item->price_xof;
                 $rows[$key]['offer'] = (float) ($item->available_quantity ?? 0);
             } else {
@@ -114,8 +118,12 @@ class MarketplaceController extends Controller
             ->withCount(['observations as published_observations_count' => fn ($query) => $query->where('status', 'published')])
             ->when($request->filled('q'), fn ($query) => $query->where(fn ($nested) => $nested->where('name', 'like', '%'.trim($request->string('q')->toString()).'%')->orWhere('commune', 'like', '%'.trim($request->string('q')->toString()).'%')->orWhere('department', 'like', '%'.trim($request->string('q')->toString()).'%')))
             ->orderBy('name')->paginate(12)->withQueryString();
+
         return $this->renderReactPage('markets', 'Marchés', [
-            'items' => collect($markets->items())->map(fn (Market $market) => $market->only(['id', 'name', 'commune', 'department']) + ['published_observations_count' => $market->published_observations_count])->values(),
+            'items' => collect($markets->items())->map(fn (Market $market) => $market->only(['id', 'name', 'commune', 'department', 'latitude', 'longitude', 'opening_hours', 'contact_phone']) + [
+                'image_url' => $market->image_path ? Storage::disk('public')->url($market->image_path) : null,
+                'published_observations_count' => $market->published_observations_count,
+            ])->values(),
             'query' => $request->input('q'),
             'total' => $markets->total(),
             'currentPage' => $markets->currentPage(),
@@ -129,8 +137,12 @@ class MarketplaceController extends Controller
             ->withCount(['observations as published_observations_count' => fn ($query) => $query->where('status', 'published')])
             ->when($request->filled('q'), fn ($query) => $query->where(fn ($nested) => $nested->where('name', 'like', '%'.trim($request->string('q')->toString()).'%')->orWhere('category', 'like', '%'.trim($request->string('q')->toString()).'%')))
             ->orderBy('category')->orderBy('name')->paginate(18)->withQueryString();
+
         return $this->renderReactPage('products', 'Produits', [
-            'items' => collect($products->items())->map(fn (Product $product) => $product->only(['id', 'name', 'category', 'unit']) + ['published_observations_count' => $product->published_observations_count])->values(),
+            'items' => collect($products->items())->map(fn (Product $product) => $product->only(['id', 'name', 'category', 'unit']) + [
+                'image_url' => $product->image_path ? Storage::disk('public')->url($product->image_path) : null,
+                'published_observations_count' => $product->published_observations_count,
+            ])->values(),
             'query' => $request->input('q'),
             'total' => $products->total(),
             'currentPage' => $products->currentPage(),
@@ -147,11 +159,39 @@ class MarketplaceController extends Controller
         ]);
     }
 
+    /** Page publique expliquant comment obtenir et mettre à jour l'application mobile. */
+    public function mobileApp(): View
+    {
+        $raw = Storage::disk('local')->get('mobile-updates/android.json');
+        $manifest = is_string($raw) ? json_decode($raw, true) : null;
+        $release = null;
+
+        if (is_array($manifest)
+            && isset($manifest['version_name'], $manifest['version_code'])
+            && is_scalar($manifest['version_name'])
+            && is_numeric($manifest['version_code'])) {
+            $release = [
+                'version_name' => (string) $manifest['version_name'],
+                'version_code' => (int) $manifest['version_code'],
+            ];
+        }
+
+        return view('marketplace.mobile-app', [
+            'release' => $release,
+            'apkAvailable' => Storage::disk('local')->exists('mobile-updates/latest.apk'),
+        ]);
+    }
+
     public function show(PriceObservation $priceObservation): View
     {
-        abort_unless($priceObservation->status === 'published', 404);
+        $priceObservation->loadMissing(['product', 'market']);
+        abort_unless(
+            $priceObservation->status === 'published'
+                && $priceObservation->product?->is_active
+                && $priceObservation->market?->is_active,
+            404,
+        );
 
-        $priceObservation->load(['product', 'market']);
         return $this->renderReactPage('detail', $priceObservation->product->name.' — Prix du marché', [
             'observation' => $this->observationData($priceObservation),
             'hasUndeclaredTransaction' => auth()->check() && ContactRequest::where('buyer_id', auth()->id())
@@ -160,6 +200,7 @@ class MarketplaceController extends Controller
         ]);
     }
 
+    /** @param array<string, mixed> $props */
     public function renderReactPage(string $page, string $title, array $props): View
     {
         $props['demoMode'] = PriceObservation::query()->where('notes', 'like', '[DEMO]%')->exists();
@@ -167,6 +208,7 @@ class MarketplaceController extends Controller
         return view('marketplace.react', compact('page', 'title', 'props'));
     }
 
+    /** @return array<string, mixed> */
     private function observationData(PriceObservation $observation): array
     {
         return [
@@ -175,15 +217,23 @@ class MarketplaceController extends Controller
             'unit_snapshot' => $observation->unit_snapshot,
             'quality' => $observation->quality,
             'available_quantity' => $observation->available_quantity,
-            'observed_at' => $observation->observed_at?->format('d/m/Y à H:i'),
-            'product' => $observation->product?->only(['id', 'name', 'category', 'unit']),
+            'observed_at' => $observation->observed_at->format('d/m/Y à H:i'),
+            'product' => $observation->product ? $observation->product->only(['id', 'name', 'category', 'unit']) + [
+                'image_url' => $observation->product->image_path ? Storage::disk('public')->url($observation->product->image_path) : null,
+            ] : null,
             'market' => $observation->market?->only(['id', 'name', 'commune', 'department']),
         ];
     }
 
     public function storeContact(Request $request, PriceObservation $priceObservation): RedirectResponse
     {
-        abort_unless($priceObservation->status === 'published', 404);
+        $priceObservation->loadMissing(['product', 'market']);
+        abort_unless(
+            $priceObservation->status === 'published'
+                && $priceObservation->product?->is_active
+                && $priceObservation->market?->is_active,
+            404,
+        );
 
         if (ContactRequest::where('buyer_id', $request->user()->id)
             ->where('status', 'approved')->whereNull('transaction_declared_at')->exists()) {
@@ -214,9 +264,9 @@ class MarketplaceController extends Controller
     public function myRequests(Request $request): View
     {
         $requests = ContactRequest::with(['product', 'market', 'producer'])
-                ->where('buyer_id', $request->user()->id)
-                ->latest()
-                ->paginate(10);
+            ->where('buyer_id', $request->user()->id)
+            ->latest()
+            ->paginate(10);
 
         return $this->renderReactPage('requests', 'Mes demandes', [
             'items' => collect($requests->items())->map(fn (ContactRequest $item) => [
@@ -254,8 +304,8 @@ class MarketplaceController extends Controller
     public function storePriceAlert(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
-            'market_id' => ['nullable', 'exists:markets,id'],
+            'product_id' => ['required', Rule::exists('products', 'id')->where('is_active', true)],
+            'market_id' => ['nullable', Rule::exists('markets', 'id')->where('is_active', true)],
             'target_price_xof' => ['nullable', 'integer', 'min:1', 'max:100000000'],
             'phone' => ['required', 'string', 'regex:/^\\+[1-9][0-9]{7,14}$/'],
             'notification_consent' => ['accepted'],
@@ -298,4 +348,3 @@ class MarketplaceController extends Controller
         return back()->with('status', 'Votre déclaration de transaction a été enregistrée.');
     }
 }
-

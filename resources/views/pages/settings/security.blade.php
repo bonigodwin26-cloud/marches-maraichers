@@ -1,12 +1,9 @@
 <?php
 
-use App\Concerns\PasswordValidationRules;
-use Flux\Flux;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 /* @chisel-passkeys */
@@ -17,13 +14,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 /* @end-chisel-2fa */
 
-new #[Title('Security settings')] class extends Component {
-    use PasswordValidationRules;
-
-    public string $current_password = '';
-    public string $password = '';
-    public string $password_confirmation = '';
-
+new #[Layout('layouts.marketplace-settings')] #[Title('Security settings')] class extends Component {
     /* @chisel-2fa */
     public bool $canManageTwoFactor;
 
@@ -73,31 +64,6 @@ new #[Title('Security settings')] class extends Component {
             $this->loadPasskeys();
         }
         /* @end-chisel-passkeys */
-    }
-
-    /**
-     * Update the password for the currently authenticated user.
-     */
-    public function updatePassword(): void
-    {
-        try {
-            $validated = $this->validate([
-                'current_password' => $this->currentPasswordRules(),
-                'password' => $this->passwordRules(),
-            ]);
-        } catch (ValidationException $e) {
-            $this->reset('current_password', 'password', 'password_confirmation');
-
-            throw $e;
-        }
-
-        Auth::user()->update([
-            'password' => $validated['password'],
-        ]);
-
-        $this->reset('current_password', 'password', 'password_confirmation');
-
-        Flux::toast(variant: 'success', text: __('Password updated.'));
     }
 
     /* @chisel-passkeys */
@@ -183,45 +149,32 @@ new #[Title('Security settings')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    @include('partials.settings-heading')
-
     <flux:heading level="2" class="sr-only">{{ __('Security settings') }}</flux:heading>
 
-    <x-pages::settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
-        <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
-            <flux:input
-                wire:model="current_password"
-                :label="__('Current password')"
-                type="password"
-                required
-                autocomplete="current-password"
-                viewable
-            />
-            <flux:input
-                wire:model="password"
-                :label="__('New password')"
-                type="password"
-                required
-                autocomplete="new-password"
-                passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
-                viewable
-            />
-            <flux:input
-                wire:model="password_confirmation"
-                :label="__('Confirm password')"
-                type="password"
-                required
-                autocomplete="new-password"
-                passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
-                viewable
-            />
-
-            <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" data-test="update-password-button">
-                    {{ __('Save') }}
-                </flux:button>
+    <x-pages::settings.layout :heading="__('Password')" :subheading="__('Request a secure password reset link by email')">
+        @if (auth()->user()->is_admin && auth()->user()->two_factor_confirmed_at)
+            <div class="settings-security-card" role="status" style="margin-bottom: 1.5rem;">
+                <p>La double authentification est active sur votre compte admin.</p>
+                <a href="{{ route('admin.index') }}" class="button button-primary" style="display:inline-block;margin-top:.5rem;">Accéder au tableau de bord admin</a>
             </div>
-        </form>
+        @endif
+
+        @if (auth()->user()->is_admin && ! auth()->user()->two_factor_confirmed_at)
+            <div class="settings-security-card" role="status" style="border-left: 4px solid #16a34a; margin-bottom: 1.5rem;">
+                <p><strong>Étape obligatoire pour accéder à l’administration</strong></p>
+                <p>Pour la sécurité des données de marché, la double authentification doit être activée sur votre compte admin. Cliquez sur « Enable 2FA » ci-dessous, scannez le QR code avec une application d’authentification (Google Authenticator, Authy…), puis saisissez le code à 6 chiffres. Vous serez redirigé automatiquement vers le tableau de bord admin.</p>
+            </div>
+        @endif
+
+        <div class="settings-security-card">
+            <p>Pour protéger votre compte administrateur, le nouveau mot de passe est défini uniquement depuis un lien temporaire envoyé à votre adresse email.</p>
+            <strong>{{ auth()->user()->email }}</strong>
+            <form method="POST" action="{{ route('password.email') }}">
+                @csrf
+                <input type="hidden" name="email" value="{{ auth()->user()->email }}">
+                <flux:button variant="primary" type="submit">{{ __('Envoyer le lien de réinitialisation') }}</flux:button>
+            </form>
+        </div>
 
         {{-- @chisel-2fa --}}
         @if ($canManageTwoFactor)

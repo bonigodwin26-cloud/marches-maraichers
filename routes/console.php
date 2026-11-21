@@ -1,11 +1,11 @@
 <?php
 
+use App\Models\ContactRequest;
+use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schedule;
-use App\Models\ContactRequest;
-use App\Models\User;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -15,6 +15,7 @@ Artisan::command('market:remind-pending-requests', function () {
     $recipients = User::query()->where('is_admin', true)->whereNotNull('email')->pluck('email')->all();
     if (! $recipients) {
         $this->warn('Aucun administrateur avec une adresse e-mail : les rappels restent en attente.');
+
         return 0;
     }
 
@@ -28,9 +29,9 @@ Artisan::command('market:remind-pending-requests', function () {
         $body = sprintf(
             "Une demande de mise en relation attend depuis plus de 48 heures.\n\nDemande : #%d\nAcheteur : %s\nProduit : %s\nMarché : %s\nTéléphone : %s\n\nConnectez-vous à l’espace équipe pour la traiter.",
             $contactRequest->id,
-            $contactRequest->buyer?->name ?? 'Acheteur',
-            $contactRequest->product?->name ?? 'Produit',
-            $contactRequest->market?->name ?? 'Marché',
+            $contactRequest->buyer->name,
+            $contactRequest->product->name,
+            $contactRequest->market->name,
             $contactRequest->phone,
         );
 

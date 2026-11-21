@@ -15,6 +15,8 @@ new class extends Component {
      */
     public function deleteUser(Logout $logout): void
     {
+        abort_if(Auth::user()->is_admin, 403, 'Les comptes administrateur ne peuvent pas être supprimés depuis leur profil.');
+
         $this->validate([
             'password' => $this->currentPasswordRules(),
         ]);

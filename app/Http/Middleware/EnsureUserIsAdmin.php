@@ -10,7 +10,12 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($request->user()?->is_admin, 403);
+        $user = $request->user();
+        abort_unless($user?->is_admin, 403);
+
+        if (! $user->two_factor_confirmed_at) {
+            return redirect()->route('security.edit');
+        }
 
         return $next($request);
     }

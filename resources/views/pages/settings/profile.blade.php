@@ -7,15 +7,20 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Livewire\WithFileUploads;
+use Illuminate\Validation\Rules\File;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Profile settings')] class extends Component {
+new #[Layout('layouts.marketplace-settings')] #[Title('Profile settings')] class extends Component {
     use ProfileValidationRules;
+    use WithFileUploads;
 
     public string $name = '';
     public string $email = '';
+    public $avatar;
 
     /**
      * Mount the component.
@@ -33,7 +38,10 @@ new #[Title('Profile settings')] class extends Component {
     {
         $user = Auth::user();
 
-        $validated = $this->validate($this->profileRules($user->id));
+        $validated = $this->validate([
+            ...$this->profileRules($user->id),
+            'avatar' => ['nullable', File::image()->max(2048)],
+        ]);
 
         $user->fill($validated);
 
@@ -42,6 +50,14 @@ new #[Title('Profile settings')] class extends Component {
         }
 
         $user->save();
+
+        if ($this->avatar) {
+            if ($user->avatar_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar_path);
+            }
+            $user->avatar_path = $this->avatar->store('avatars', 'public');
+            $user->save();
+        }
 
         Flux::toast(variant: 'success', text: __('Profile updated.'));
     }
@@ -81,12 +97,24 @@ new #[Title('Profile settings')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    @include('partials.settings-heading')
-
     <flux:heading level="2" class="sr-only">{{ __('Profile settings') }}</flux:heading>
 
     <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
+            <div class="settings-avatar-field">
+                @if ($avatar)
+                    <img src="{{ $avatar->temporaryUrl() }}" alt="Prévisualisation de l’avatar">
+                @elseif(auth()->user()->avatar_path)
+                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url(auth()->user()->avatar_path) }}" alt="Avatar actuel">
+                @else
+                    <span>{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
+                @endif
+                <label>
+                    <span>Photo de profil</span>
+                    <input type="file" wire:model="avatar" accept="image/jpeg,image/png,image/webp">
+                    <small>JPG, PNG ou WebP · 2 Mo maximum</small>
+                </label>
+            </div>
             <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
 
             <div>
@@ -124,7 +152,7 @@ new #[Title('Profile settings')] class extends Component {
         </form>
 
         {{-- @chisel-email-verification --}}
-        @if ($this->showDeleteUser)
+        @if ($this->showDeleteUser && ! auth()->user()->is_admin)
         {{-- @end-chisel-email-verification --}}
             <livewire:pages::settings.delete-user-form />
         {{-- @chisel-email-verification --}}

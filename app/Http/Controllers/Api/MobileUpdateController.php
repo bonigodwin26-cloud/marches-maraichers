@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class MobileUpdateController extends Controller
@@ -26,6 +26,16 @@ class MobileUpdateController extends Controller
             'sha256' => (string) ($manifest['sha256'] ?? ''),
             'mandatory' => (bool) ($manifest['mandatory'] ?? false),
         ])->header('Cache-Control', 'no-store');
+    }
+
+    public function downloadUrl(): JsonResponse
+    {
+        return response()->json([
+            'url' => URL::temporarySignedRoute(
+                'api.mobile.app-update.download',
+                now()->addMinutes(5),
+            ),
+        ]);
     }
 
     public function download(Request $request): BinaryFileResponse

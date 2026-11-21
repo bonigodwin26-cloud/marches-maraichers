@@ -17,11 +17,13 @@ class NotificationDelivery extends Model
         return ['attempted_at' => 'datetime'];
     }
 
+    /** @return BelongsTo<ContactRequest, $this> */
     public function contactRequest(): BelongsTo
     {
         return $this->belongsTo(ContactRequest::class);
     }
 
+    /** @return BelongsTo<PriceAlertSubscription, $this> */
     public function priceAlertSubscription(): BelongsTo
     {
         return $this->belongsTo(PriceAlertSubscription::class);

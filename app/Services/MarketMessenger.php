@@ -149,8 +149,11 @@ class MarketMessenger
             $delivery->error = null;
         } catch (Throwable $exception) {
             $delivery->status = 'failed';
-            $delivery->error = mb_substr($exception->getMessage(), 0, 2000);
-            Log::warning('Échec de notification du marché.', ['delivery_id' => $delivery->id, 'error' => $delivery->error]);
+            $delivery->error = 'Le fournisseur de notification a refusé la demande.';
+            Log::warning('Échec de notification du marché.', [
+                'delivery_id' => $delivery->id,
+                'exception' => $exception::class,
+            ]);
         }
 
         $delivery->channel = $channel;

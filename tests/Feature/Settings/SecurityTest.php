@@ -3,10 +3,13 @@
 namespace Tests\Feature\Settings;
 
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Fortify\Features;
 use Livewire\Livewire;
+use Mockery;
 use Tests\TestCase;
 
 class SecurityTest extends TestCase
@@ -78,7 +81,8 @@ class SecurityTest extends TestCase
             /* @end-chisel-password-confirmation */
             ->get(route('security.edit'))
             ->assertOk()
-            ->assertSee('Update password')
+            ->assertSee('Mot de passe')
+            ->assertSee('Envoyer le lien de réinitialisation')
             ->assertDontSee('Manage your passkeys for passwordless sign-in')
             ->assertDontSee('Add a passkey to sign in without a password')
             ->assertDontSee('Two-factor authentication');
@@ -109,39 +113,52 @@ class SecurityTest extends TestCase
         /* @end-chisel-2fa */
     }
 
-    public function test_password_can_be_updated(): void
+    public function test_admin_is_redirected_to_dashboard_after_confirming_two_factor(): void
     {
-        $user = User::factory()->create([
-            'password' => Hash::make('password'),
-        ]);
+        $admin = User::factory()->create(['is_admin' => true]);
+        $this->actingAs($admin);
 
-        $this->actingAs($user);
+        $confirm = Mockery::mock(ConfirmTwoFactorAuthentication::class);
+        $confirm->shouldReceive('__invoke')->once();
+        $this->app->instance(ConfirmTwoFactorAuthentication::class, $confirm);
 
-        $response = Livewire::test('pages::settings.security')
-            ->set('current_password', 'password')
-            ->set('password', 'new-password')
-            ->set('password_confirmation', 'new-password')
-            ->call('updatePassword');
-
-        $response->assertHasNoErrors();
-
-        $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
+        Livewire::test('pages::settings.two-factor-setup-modal', ['requiresConfirmation' => true])
+            ->set('code', '123456')
+            ->call('confirmTwoFactor')
+            ->assertRedirect(route('admin.index'));
     }
 
-    public function test_correct_password_must_be_provided_to_update_password(): void
+    public function test_security_settings_offers_a_password_reset_link_by_email(): void
     {
-        $user = User::factory()->create([
-            'password' => Hash::make('password'),
-        ]);
+        $user = User::factory()->create();
 
-        $this->actingAs($user);
+        $this->actingAs($user)
+            ->withSession(['auth.password_confirmed_at' => time()])
+            ->get(route('security.edit'))
+            ->assertOk()
+            ->assertSee('action="'.route('password.email').'"', false)
+            ->assertSee($user->email);
+    }
 
-        $response = Livewire::test('pages::settings.security')
-            ->set('current_password', 'wrong-password')
-            ->set('password', 'new-password')
-            ->set('password_confirmation', 'new-password')
-            ->call('updatePassword');
+    public function test_password_reset_link_can_be_requested(): void
+    {
+        Notification::fake();
 
-        $response->assertHasErrors(['current_password']);
+        $user = User::factory()->create();
+
+        $this->post(route('password.email'), ['email' => $user->email]);
+
+        Notification::assertSentTo($user, ResetPassword::class);
+    }
+
+    public function test_password_reset_link_is_not_sent_to_an_unknown_email_address(): void
+    {
+        Notification::fake();
+
+        User::factory()->create();
+
+        $this->post(route('password.email'), ['email' => 'inconnu@example.com']);
+
+        Notification::assertNothingSent();
     }
 }

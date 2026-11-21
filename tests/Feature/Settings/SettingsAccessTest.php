@@ -22,6 +22,18 @@ class SettingsAccessTest extends TestCase
             ->assertDontSee('>Tableau de bord<', false);
     }
 
+    public function test_a_collector_sees_the_collection_navigation_in_settings(): void
+    {
+        $collector = User::factory()->create(['is_admin' => false, 'is_collector' => true]);
+
+        $this->actingAs($collector)
+            ->get(route('profile.edit'))
+            ->assertOk()
+            ->assertSee('Bénin · Collecte')
+            ->assertSee(route('collector.dashboard'), false)
+            ->assertDontSee('Bénin · Administration');
+    }
+
     public function test_an_admin_sees_the_admin_navigation_in_settings(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);

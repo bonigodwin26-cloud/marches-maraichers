@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\MarketAdminController;
 use App\Http\Controllers\Api\MobileUpdateController;
+use App\Http\Controllers\Buyer\BuyerDashboardController;
+use App\Http\Controllers\Collector\CollectorDashboardController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\VerifyEmailCodeController;
 use Illuminate\Http\Request;
@@ -24,11 +26,25 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/prix/{priceObservation}/demande', [MarketplaceController::class, 'storeContact'])->middleware('throttle:10,1')->name('contacts.store');
+    Route::get('/mon-espace', [BuyerDashboardController::class, 'index'])->name('buyer.dashboard');
     Route::get('/mes-demandes', [MarketplaceController::class, 'myRequests'])->name('my-requests');
     Route::patch('/mes-demandes/{contactRequest}/transaction', [MarketplaceController::class, 'declareTransaction'])->middleware('throttle:10,1')->name('contacts.transaction');
     Route::post('/alertes-prix', [MarketplaceController::class, 'storePriceAlert'])->middleware('throttle:10,1')->name('price-alerts.store');
     Route::delete('/alertes-prix/{priceAlertSubscription}', [MarketplaceController::class, 'destroyPriceAlert'])->middleware('throttle:30,1')->name('price-alerts.destroy');
-    Route::get('dashboard', fn (Request $request) => redirect()->route($request->user()->is_admin ? 'admin.index' : 'my-requests'))->name('dashboard');
+    Route::get('dashboard', function (Request $request) {
+        $user = $request->user();
+
+        if ($user->is_admin) {
+            return redirect()->route('admin.index');
+        }
+
+        return redirect()->route($user->is_collector ? 'collector.dashboard' : 'buyer.dashboard');
+    })->name('dashboard');
+});
+
+Route::middleware(['auth', 'verified', 'collector'])->prefix('espace-collecte')->name('collector.')->group(function () {
+    Route::get('/', [CollectorDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/prix', [CollectorDashboardController::class, 'storePrice'])->middleware('throttle:20,1')->name('prices.store');
 });
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -46,6 +62,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::patch('/prix/{priceObservation}/validation', [MarketAdminController::class, 'reviewPrice'])->name('prices.review');
     Route::get('/exports/{type}', [MarketAdminController::class, 'export'])->whereIn('type', ['demandes', 'prix'])->name('exports');
     Route::patch('/demandes/{contactRequest}', [MarketAdminController::class, 'reviewRequest'])->name('contacts.review');
+    Route::patch('/collecteurs/{user}', [MarketAdminController::class, 'toggleCollector'])->name('collectors.toggle');
     Route::post('/notifications/{notificationDelivery}/retry', [MarketAdminController::class, 'retryNotification'])->name('notifications.retry');
 });
 

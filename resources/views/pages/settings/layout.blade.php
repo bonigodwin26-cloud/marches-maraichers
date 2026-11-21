@@ -7,6 +7,10 @@
             <flux:navlist.item :href="route('appearance.edit')" wire:navigate>{{ __('Appearance') }}</flux:navlist.item>
             @if(auth()->user()->is_admin)
                 <flux:navlist.item :href="route('admin.index')">{{ __('Retour à l’administration') }}</flux:navlist.item>
+            @elseif(auth()->user()->is_collector)
+                <flux:navlist.item :href="route('collector.dashboard')">{{ __('Retour à l’espace collecte') }}</flux:navlist.item>
+            @else
+                <flux:navlist.item :href="route('buyer.dashboard')">{{ __('Retour à mon espace') }}</flux:navlist.item>
             @endif
         </flux:navlist>
     </aside>

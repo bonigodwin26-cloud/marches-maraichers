@@ -6,8 +6,9 @@
     <meta name="theme-color" content="#053c2e">
     <title>{{ $title }} — Marchés maraîchers du Bénin</title>
     <link rel="stylesheet" href="{{ asset('css/marketplace.css') }}?v=react-41">
-    <link rel="stylesheet" href="{{ asset('css/admin-console.css') }}?v=20">
-    <link rel="stylesheet" href="{{ asset('css/mobile-polish.css') }}?v=20261028-4">
+    <link rel="stylesheet" href="{{ asset('css/admin-console.css') }}?v=21">
+    <link rel="stylesheet" href="{{ asset('css/user-console.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/mobile-polish.css') }}?v=20261028-6">
 </head>
 <body class="market-app" data-page="{{ $page }}">
     <div id="marketplace-root"></div>
@@ -25,6 +26,9 @@
             'login' => route('login'),
             'register' => route('register'),
             'requests' => auth()->check() ? route('my-requests') : route('login'),
+            'buyerDashboard' => auth()->check() ? route('buyer.dashboard') : route('login'),
+            'collectorDashboard' => auth()->check() && (auth()->user()->is_collector || auth()->user()->is_admin) ? route('collector.dashboard') : route('login'),
+            'collectorPrices' => route('collector.prices.store'),
             'admin' => auth()->check() && auth()->user()->is_admin ? route('admin.index') : route('login'),
             'adminProducts' => route('admin.products.store'),
             'adminProductsPrefix' => url('/admin/produits'),
@@ -37,6 +41,7 @@
             'adminReviewPricePrefix' => url('/admin/prix'),
             'adminExportsPrefix' => url('/admin/exports'),
             'adminRetryPrefix' => url('/admin/notifications'),
+            'adminCollectorsPrefix' => url('/admin/collecteurs'),
             'transactionPrefix' => url('/mes-demandes'),
             'loginStore' => route('login.store'),
             'registerStore' => route('register.store'),
@@ -54,7 +59,11 @@
             'contactPrefix' => url('/prix'),
             'priceAlerts' => url('/alertes-prix'),
         ],
-        'user' => auth()->check() ? ['name' => auth()->user()->name, 'isAdmin' => auth()->user()->is_admin] : null,
+        'user' => auth()->check() ? [
+            'name' => auth()->user()->name,
+            'isAdmin' => auth()->user()->is_admin,
+            'isCollector' => auth()->user()->is_collector || auth()->user()->is_admin,
+        ] : null,
         'csrf' => csrf_token(),
         'query' => request()->query(),
     ]) }};</script>

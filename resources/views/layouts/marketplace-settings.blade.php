@@ -24,6 +24,15 @@
                     <a class="admin-side-link" href="{{ route('admin.index') }}#admin-trends"><x-ui-icon name="chart-no-axes-combined" />Tendances</a>
                     <a class="admin-side-link is-active" href="{{ route('profile.edit') }}"><x-ui-icon name="settings" />Paramètres</a>
                 </nav>
+            @elseif (auth()->user()->is_collector)
+                <a class="admin-side-brand" href="{{ route('collector.dashboard') }}"><span class="admin-brand-mark"><x-ui-icon name="sprout" /></span><span>Marchés maraîchers<small>Bénin · Collecte</small></span></a>
+                <span class="admin-side-caption">MON ESPACE</span>
+                <nav class="admin-side-nav">
+                    <a class="admin-side-link" href="{{ route('collector.dashboard') }}"><x-ui-icon name="chart-no-axes-column-increasing" />Tableau de bord</a>
+                    <a class="admin-side-link" href="{{ route('prices.index') }}"><x-ui-icon name="store" />Prix du jour</a>
+                    <a class="admin-side-link" href="{{ route('my-requests') }}"><x-ui-icon name="mail" />Mes demandes</a>
+                    <a class="admin-side-link is-active" href="{{ route('profile.edit') }}"><x-ui-icon name="settings" />Paramètres</a>
+                </nav>
             @else
                 <a class="admin-side-brand" href="{{ route('home') }}"><span class="admin-brand-mark"><x-ui-icon name="sprout" /></span><span>Marchés maraîchers<small>Bénin · Mon compte</small></span></a>
                 <span class="admin-side-caption">MON ESPACE</span>
@@ -42,7 +51,7 @@
                     <div><h1>Paramètres</h1><span class="admin-found-count">Gérez votre profil et la sécurité de votre compte</span></div>
                 </div>
                 <div class="admin-panel-actions">
-                    <a class="settings-console-back" href="{{ auth()->user()->is_admin ? route('admin.index') : route('my-requests') }}"><x-ui-icon name="arrow-left" /> Retour</a>
+                    <a class="settings-console-back" href="{{ auth()->user()->is_admin ? route('admin.index') : (auth()->user()->is_collector ? route('collector.dashboard') : route('buyer.dashboard')) }}"><x-ui-icon name="arrow-left" /> Retour</a>
                     @if(auth()->user()->avatar_path)
                         <img class="settings-console-avatar" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url(auth()->user()->avatar_path) }}" alt="Avatar de {{ auth()->user()->name }}">
                     @else

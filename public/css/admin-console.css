@@ -1,58 +1,58 @@
 /* Espace d'administration inspire du tableau eProduct fourni en reference. */
-body.market-app[data-page="admin"]{min-height:100svh;margin:0;background:#fff;color:var(--ink)}
-body.market-app[data-page="admin"] #marketplace-root{width:100%;min-height:100svh;padding:0;box-sizing:border-box}
-body.market-app[data-page="admin"][data-theme="dark"]{background:#0f1d17;color:#e8f2ec}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-console,body.market-app[data-page="admin"][data-theme="dark"] .admin-content{background:#0f1d17}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-titlebar{border-color:#2b4438}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-titlebar h1,body.market-app[data-page="admin"][data-theme="dark"] .admin-panel-heading h3,body.market-app[data-page="admin"][data-theme="dark"] .admin-trend-item strong,body.market-app[data-page="admin"][data-theme="dark"] .admin-activity-item strong{color:#e8f2ec}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-panel,body.market-app[data-page="admin"][data-theme="dark"] .admin-header-popover{border-color:#2b4438;background:#172a20;color:#d4e5da}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-panel-heading>a,body.market-app[data-page="admin"][data-theme="dark"] .admin-panel-heading h3,body.market-app[data-page="admin"][data-theme="dark"] .admin-activity-item small,body.market-app[data-page="admin"][data-theme="dark"] .admin-trend-item small{color:#a5bdb0}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-chart-footer,body.market-app[data-page="admin"][data-theme="dark"] .admin-trend-item,body.market-app[data-page="admin"][data-theme="dark"] .admin-activity-item{border-color:#2b4438;color:#a5bdb0}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-quick-actions,body.market-app[data-page="admin"][data-theme="dark"] .admin-search-box{border-color:#2b4438;background:#172a20;color:#d4e5da}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-search-box input{color:#e8f2ec}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content .section-heading h2,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content .section-heading span,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content p,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content label,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content td,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content th{color:#d4e5da}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content th{background:#1b3328;border-color:#2b4438}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content td{background:#172a20;border-color:#2b4438}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content tbody tr:hover td{background:#203a2c;border-color:#42604d}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content td strong,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content td small{color:#e8f2ec}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content td small,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-found-count,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-panel-meta{color:#a5bdb0}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content input,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content select,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content textarea{border-color:#385443;background:#172a20;color:#e8f2ec}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content input::placeholder,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content textarea::placeholder{color:#91aa9c}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content .button-light,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content .admin-tool-button{border-color:#385443;background:#203a2c;color:#d9f36b}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content .notice{border-color:#6b5b2b;background:#3a321b;color:#f1d98c}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content .admin-empty-row td,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-content .admin-empty-row:hover td{background:#172a20;border-color:#2b4438}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-tabs{border-color:#2b4438}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-tabs button{color:#a5bdb0}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-tabs button:hover,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-tabs button.is-active{color:#e8f2ec}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-tabs b{background:#203a2c;color:#d9f36b}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-card,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-card.is-amber,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-card.is-lime,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-card.is-blue,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-card.is-forest{border-color:#385443;background:#172a20;color:#e8f2ec}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-card:hover{background:#203a2c;box-shadow:0 12px 24px #00000030}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-icon{background:#294536;color:#d9f36b}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-label,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-card small{color:#b6cbbd}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-card strong{color:#f1f7f3}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-kpi-arrow{color:#d9f36b}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-activity-avatar{background:#294536;color:#d9f36b}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-record-status{background:#3a2525;color:#ffaaa0}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-record-status.is-active{background:#234633;color:#bce58a}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]){min-height:100svh;margin:0;background:#fff;color:var(--ink)}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) #marketplace-root{width:100%;min-height:100svh;padding:0;box-sizing:border-box}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"]{background:#0f1d17;color:#e8f2ec}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-console,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content{background:#0f1d17}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-titlebar{border-color:#2b4438}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-titlebar h1,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-panel-heading h3,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-trend-item strong,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-activity-item strong{color:#e8f2ec}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-panel,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-header-popover{border-color:#2b4438;background:#172a20;color:#d4e5da}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-panel-heading>a,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-panel-heading h3,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-activity-item small,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-trend-item small{color:#a5bdb0}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-chart-footer,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-trend-item,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-activity-item{border-color:#2b4438;color:#a5bdb0}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-quick-actions,body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-search-box{border-color:#2b4438;background:#172a20;color:#d4e5da}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-search-box input{color:#e8f2ec}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content .section-heading h2,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content .section-heading span,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content p,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content label,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content td,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content th{color:#d4e5da}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content th{background:#1b3328;border-color:#2b4438}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content td{background:#172a20;border-color:#2b4438}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content tbody tr:hover td{background:#203a2c;border-color:#42604d}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content td strong,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content td small{color:#e8f2ec}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content td small,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-found-count,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-panel-meta{color:#a5bdb0}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content input,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content select,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content textarea{border-color:#385443;background:#172a20;color:#e8f2ec}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content input::placeholder,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content textarea::placeholder{color:#91aa9c}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content .button-light,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content .admin-tool-button{border-color:#385443;background:#203a2c;color:#d9f36b}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content .notice{border-color:#6b5b2b;background:#3a321b;color:#f1d98c}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content .admin-empty-row td,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-content .admin-empty-row:hover td{background:#172a20;border-color:#2b4438}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-tabs{border-color:#2b4438}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-tabs button{color:#a5bdb0}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-tabs button:hover,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-tabs button.is-active{color:#e8f2ec}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-tabs b{background:#203a2c;color:#d9f36b}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-card,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-card.is-amber,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-card.is-lime,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-card.is-blue,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-card.is-forest{border-color:#385443;background:#172a20;color:#e8f2ec}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-card:hover{background:#203a2c;box-shadow:0 12px 24px #00000030}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-icon{background:#294536;color:#d9f36b}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-label,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-card small{color:#b6cbbd}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-card strong{color:#f1f7f3}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-kpi-arrow{color:#d9f36b}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-activity-avatar{background:#294536;color:#d9f36b}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-record-status{background:#3a2525;color:#ffaaa0}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-record-status.is-active{background:#234633;color:#bce58a}
 .admin-console{width:100%;min-height:100svh;display:grid;grid-template-columns:clamp(220px,18vw,320px) minmax(0,1fr);align-items:stretch;margin:0;overflow:visible;border-radius:0;background:#fff;box-shadow:none}
 .admin-sidebar{position:sticky;top:0;align-self:start;display:flex;height:100svh;min-height:560px;flex-direction:column;overflow:hidden;padding:34px 12px 16px;background:#174d37;color:#fff}
 .admin-side-brand{display:flex;align-items:center;gap:12px;padding:0 12px 28px;border:0;background:transparent;color:#fff;text-decoration:none;font-size:clamp(14px,1vw,18px);font-weight:800;line-height:1.25}
@@ -261,8 +261,8 @@ body.market-app[data-page="admin"][data-theme="dark"] .admin-record-status.is-ac
 .admin-record-actions{display:flex;flex:0 0 auto;align-items:center;gap:5px}
 .admin-record-action{padding:4px 7px;border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--muted);font:inherit;font-size:10px;cursor:pointer}
 .admin-record-action:hover{border-color:#b7d59c;background:#edf2e8;color:var(--forest)}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-record-action{border-color:#385443;color:#b6cbbd}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-record-action:hover{background:#294536;color:#d9f36b}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-record-action{border-color:#385443;color:#b6cbbd}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-record-action:hover{background:#294536;color:#d9f36b}
 .admin-record-empty{align-self:center;margin:20px 0;color:var(--muted);font-size:12px;text-align:center}
 .admin-products-toolbar{align-items:center}
 .admin-products-toolbar>div{min-width:0}
@@ -281,11 +281,11 @@ body.market-app[data-page="admin"][data-theme="dark"] .admin-record-action:hover
 .admin-modal .admin-form{grid-template-columns:1fr;gap:13px}
 .admin-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
 .admin-price-inline-form,.admin-markets-section>.catalog-grid>form{display:none!important}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-product-summary,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-modal{border-color:#385443;background:#172a20}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-product-summary strong,
-body.market-app[data-page="admin"][data-theme="dark"] .admin-modal-heading h2{color:#f1f7f3}
-body.market-app[data-page="admin"][data-theme="dark"] .admin-modal-close{border-color:#385443;color:#b6cbbd}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-product-summary,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-modal{border-color:#385443;background:#172a20}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-product-summary strong,
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-modal-heading h2{color:#f1f7f3}
+body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"])[data-theme="dark"] .admin-modal-close{border-color:#385443;color:#b6cbbd}
 .admin-producer-directory{margin-top:25px}
 .admin-producer-directory .section-heading{margin:0 0 12px}
 .admin-subheading{margin:26px 0 10px!important}

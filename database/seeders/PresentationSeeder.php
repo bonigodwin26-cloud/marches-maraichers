@@ -41,6 +41,7 @@ class PresentationSeeder extends Seeder
                 'privacy_policy_version' => config('privacy.version'),
             ],
         );
+        $collector->forceFill(['is_collector' => true])->save();
 
         $products = [
             ['Tomate', 'Légumes', 'kg', 'tomate.jpg'],

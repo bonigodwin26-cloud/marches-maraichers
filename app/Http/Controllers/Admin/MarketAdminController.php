@@ -11,6 +11,7 @@ use App\Models\NotificationDelivery;
 use App\Models\PriceObservation;
 use App\Models\Producer;
 use App\Models\Product;
+use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\MarketMessenger;
 use Illuminate\Http\RedirectResponse;
@@ -99,6 +100,10 @@ class MarketAdminController extends Controller
             'marketCount' => Market::count(),
             'productCount' => Product::count(),
             'producerCount' => Producer::where('is_active', true)->count(),
+            'users' => User::orderBy('name')->limit(200)->get()->map(fn (User $item) => [
+                'id' => $item->id, 'name' => $item->name, 'email' => $item->email,
+                'is_collector' => $item->is_collector, 'is_admin' => $item->is_admin,
+            ])->values(),
             'priceCount' => PriceObservation::whereDate('observed_at', today())->count(),
             'transactionCount' => ContactRequest::whereNotNull('transaction_declared_at')->count(),
             'pendingPriceCount' => PriceObservation::where('status', 'pending')->count(),
@@ -246,6 +251,18 @@ class MarketAdminController extends Controller
         $this->auditLogger->record($request, 'producer.status_changed', $producer, ['is_active' => $producer->is_active]);
 
         return back()->with('admin-status', $producer->is_active ? 'Producteur réactivé.' : 'Producteur désactivé.');
+    }
+
+    public function toggleCollector(Request $request, User $user): RedirectResponse
+    {
+        abort_if($user->is_admin, 422, 'Le rôle d’un administrateur ne peut pas être modifié ici.');
+
+        $user->forceFill(['is_collector' => ! $user->is_collector])->save();
+        $this->auditLogger->record($request, 'collector.role_changed', $user, ['is_collector' => $user->is_collector]);
+
+        return back()->with('admin-status', $user->is_collector
+            ? 'Rôle collecteur accordé à '.$user->name.'.'
+            : 'Rôle collecteur retiré à '.$user->name.'.');
     }
 
     public function storePrice(Request $request): RedirectResponse

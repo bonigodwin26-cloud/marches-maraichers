@@ -34,6 +34,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property bool $is_admin
+ * @property bool $is_collector
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -58,6 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'email_verification_code_expires_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'is_collector' => 'boolean',
         ];
     }
 
@@ -75,6 +77,11 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function isAdmin(): bool
     {
         return $this->is_admin;
+    }
+
+    public function isCollector(): bool
+    {
+        return $this->is_collector || $this->is_admin;
     }
 
     /**

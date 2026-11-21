@@ -642,14 +642,14 @@
     justify-content: center;
   }
 
-  body.market-app[data-page="admin"] .admin-console {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-console {
     width: 100%;
     min-width: 0;
     grid-template-columns: minmax(0, 1fr);
     overflow-x: clip;
   }
 
-  body.market-app[data-page="admin"] .admin-sidebar {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-sidebar {
     position: relative;
     inset: auto;
     width: 100%;
@@ -660,14 +660,14 @@
     overflow: visible;
   }
 
-  body.market-app[data-page="admin"] .admin-side-nav {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-side-nav {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 4px;
     overflow: visible;
   }
 
-  body.market-app[data-page="admin"] .admin-side-link {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-side-link {
     display: flex;
     min-width: 0;
     min-height: 42px;
@@ -684,82 +684,82 @@
     overflow-wrap: anywhere;
   }
 
-  body.market-app[data-page="admin"] .admin-side-link .ui-icon {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-side-link .ui-icon {
     width: 16px;
     height: 16px;
   }
 
-  body.market-app[data-page="admin"] .admin-content {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-content {
     width: 100%;
     min-width: 0;
     padding: 16px 12px 22px;
     overflow-x: clip;
   }
 
-  body.market-app[data-page="admin"] .admin-titlebar {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-titlebar {
     min-width: 0;
     grid-template-columns: minmax(0, 1fr);
     align-items: flex-start;
     gap: 9px;
   }
 
-  body.market-app[data-page="admin"] .admin-titlebar h1 {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-titlebar h1 {
     font-size: clamp(18px, 5vw, 22px);
     overflow-wrap: anywhere;
   }
 
-  body.market-app[data-page="admin"] .admin-panel-actions {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-panel-actions {
     width: 100%;
     min-width: 0;
     justify-content: flex-end;
   }
 
-  body.market-app[data-page="admin"] .admin-search-box {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-search-box {
     width: min(180px, 55vw);
     min-width: 0;
   }
 
-  body.market-app[data-page="admin"] .admin-section,
-  body.market-app[data-page="admin"] .admin-producer-directory {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-section,
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-producer-directory {
     width: 100%;
     min-width: 0;
     overflow: hidden;
   }
 
-  body.market-app[data-page="admin"] .admin-section .section-heading {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-section .section-heading {
     display: flex;
     flex-direction: column;
     gap: 5px;
   }
 
-  body.market-app[data-page="admin"] .admin-section .section-heading > span {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-section .section-heading > span {
     max-width: 100%;
     font-size: 11px;
   }
 
-  body.market-app[data-page="admin"] .admin-form,
-  body.market-app[data-page="admin"] .catalog-grid {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-form,
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .catalog-grid {
     width: 100%;
     min-width: 0;
     grid-template-columns: minmax(0, 1fr);
   }
 
-  body.market-app[data-page="admin"] .admin-content .wide-field {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-content .wide-field {
     grid-column: auto;
   }
 
-  body.market-app[data-page="admin"] .admin-content .table-wrap {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-content .table-wrap {
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
   }
 
-  body.market-app[data-page="admin"] .admin-content table {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-content table {
     max-width: none;
   }
 
-  body.market-app[data-page="admin"] .admin-summary-grid {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -788,11 +788,11 @@
     grid-column: auto;
   }
 
-  body.market-app[data-page="admin"] .admin-side-nav {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-side-nav {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  body.market-app[data-page="admin"] .admin-summary-grid {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-summary-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -855,43 +855,43 @@
 }
 
 @media (max-width: 760px) {
-  body.market-app[data-page="admin"] .admin-console { display: block; overflow-x: clip; }
-  body.market-app[data-page="admin"] .admin-sidebar {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-console { display: block; overflow-x: clip; }
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-sidebar {
     position: fixed; top: 0; right: auto; bottom: 0; left: 0; z-index: 49;
     display: flex; width: min(86vw, 320px); height: 100svh; min-height: 0;
     padding: 22px 14px 18px; overflow-y: auto; border-radius: 0 24px 24px 0;
     box-shadow: 18px 0 45px #04251c52; transform: translateX(-105%);
     transition: transform .28s cubic-bezier(.22,.8,.25,1);
   }
-  body.market-app[data-page="admin"] .admin-sidebar.is-open { transform: translateX(0); }
-  body.market-app[data-page="admin"] .admin-side-nav { display: grid; grid-template-columns: 1fr; gap: 5px; overflow: visible; }
-  body.market-app[data-page="admin"] .admin-side-link {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-sidebar.is-open { transform: translateX(0); }
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-side-nav { display: grid; grid-template-columns: 1fr; gap: 5px; overflow: visible; }
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-side-link {
     min-height: 45px; flex-direction: row; justify-content: flex-start; gap: 11px;
     padding: 0 13px; font-size: 13px; text-align: left;
   }
-  body.market-app[data-page="admin"] .admin-menu-toggle {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-menu-toggle {
     position: relative; display: grid; width: 42px; height: 42px; place-items: center;
     margin: -4px 0 0; border: 0; border-radius: 13px; background: #edf5e9;
     box-shadow: 0 5px 15px #174d3714;
   }
-  body.market-app[data-page="admin"] .admin-menu-toggle span {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-menu-toggle span {
     position: absolute; width: 17px; height: 2px; border-radius: 3px;
     background: #174d37; transition: transform .2s ease, opacity .2s ease;
   }
-  body.market-app[data-page="admin"] .admin-menu-toggle span:first-child { transform: translateY(-5px); }
-  body.market-app[data-page="admin"] .admin-menu-toggle span:last-child { transform: translateY(5px); }
-  body.market-app[data-page="admin"] .admin-menu-close {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-menu-toggle span:first-child { transform: translateY(-5px); }
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-menu-toggle span:last-child { transform: translateY(5px); }
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-menu-close {
     display: grid; position: absolute; top: 18px; right: 14px; width: 38px; height: 38px;
     place-items: center; border: 1px solid #ffffff2b; border-radius: 12px;
     background: #ffffff14; cursor: pointer;
   }
-  body.market-app[data-page="admin"] .admin-menu-close span {
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-menu-close span {
     position: absolute; width: 17px; height: 2px; border-radius: 3px; background: #fff;
   }
-  body.market-app[data-page="admin"] .admin-menu-close span:first-child { transform: rotate(45deg); }
-  body.market-app[data-page="admin"] .admin-menu-close span:last-child { transform: rotate(-45deg); }
-  body.market-app[data-page="admin"] .admin-titlebar { display: flex; flex-direction: row; align-items: flex-start; }
-  body.market-app[data-page="admin"] .admin-panel-actions { width: auto; flex: 0 0 auto; }
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-menu-close span:first-child { transform: rotate(45deg); }
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-menu-close span:last-child { transform: rotate(-45deg); }
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-titlebar { display: flex; flex-direction: row; align-items: flex-start; }
+  body.market-app:is([data-page="admin"], [data-page="buyer-dashboard"], [data-page="collector-dashboard"]) .admin-panel-actions { width: auto; flex: 0 0 auto; }
 }
 
 /* Consentement à la politique de confidentialité lors de l'inscription */

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#053c2e">
     <title>{{ $title ?? 'Marchés maraîchers — Bénin' }}</title>
-    <link rel="stylesheet" href="{{ asset('css/marketplace.css') }}?v=20261014-5">
+    <link rel="stylesheet" href="{{ asset('css/marketplace.css') }}?v=20261121-15">
 </head>
 <body class="market-app">
 <aside class="app-sidebar">
@@ -41,7 +41,7 @@
                 @endauth
             </section>
         </div>
-        <button class="theme-chip" id="themeToggle" type="button" aria-label="Activer le thème sombre" aria-pressed="false"><x-ui-icon name="sun" /><i></i><span class="sr-only">Changer de thème</span></button>
+        <button class="theme-chip" id="themeToggle" type="button" aria-label="Activer le thème sombre" aria-pressed="false"><span class="theme-side-icon theme-side-sun" aria-hidden="true"><x-ui-icon name="sun" /></span><span class="theme-side-icon theme-side-moon" aria-hidden="true"><x-ui-icon name="moon" /></span><span class="theme-thumb" aria-hidden="true"><x-ui-icon name="sun" class="theme-thumb-sun" /><x-ui-icon name="moon" class="theme-thumb-moon" /></span><span class="sr-only">Changer de thème</span></button>
         <div class="topbar-popover-anchor account-anchor">
         @auth
             <button class="account-menu account-trigger" id="accountButton" type="button" aria-expanded="false" aria-controls="accountPanel"><span class="account-avatar">{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span><span>Mon compte</span><x-ui-icon name="chevron-down" class="account-chevron" /></button>

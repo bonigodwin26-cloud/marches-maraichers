@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#053c2e">
     <title>{{ $title }} — Marchés maraîchers du Bénin</title>
-    <link rel="stylesheet" href="{{ asset('css/marketplace.css') }}?v=react-41">
+    <link rel="stylesheet" href="{{ asset('css/marketplace.css') }}?v=react-51">
     <link rel="stylesheet" href="{{ asset('css/admin-console.css') }}?v=21">
     <link rel="stylesheet" href="{{ asset('css/user-console.css') }}?v=1">
-    <link rel="stylesheet" href="{{ asset('css/mobile-polish.css') }}?v=20261028-6">
+    <link rel="stylesheet" href="{{ asset('css/mobile-polish.css') }}?v=20261121-1">
 </head>
 <body class="market-app" data-page="{{ $page }}">
     <div id="marketplace-root"></div>
